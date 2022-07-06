@@ -1,12 +1,11 @@
 #!/usr/bin/env python
 from urllib.parse import quote
 from urllib3 import disable_warnings
-from os import chdir, listdir, makedirs
+from os import chdir, makedirs
 from os.path import dirname, realpath
 from requests import Session, session
-from json import dumps, loads
-from cryptography.fernet import Fernet
-from getpass import getpass
+from json import loads
+import utils
 
 PROF_FILT = ("id", "dipartimento", "nome", "cognome")
 BASE_URL = "https://www.docenti.unina.it/"
@@ -35,69 +34,6 @@ class Node():
         if self.path == "/":
             c -= 1
         return "|"+"-"*4*c + " "+self.name
-
-
-def decrypt(filename: str):
-    with open("secret.key", "rb") as k:
-        key = Fernet(k.read())
-    with open(filename, 'rb') as f:
-        en_data = f.read()
-    return key.decrypt(en_data).decode().split("\n")
-
-
-def encrypt(filename: str, data: bytes) -> None:
-    with open("secret.key", "rb") as k:
-        key = Fernet(k.read())
-    with open(filename, 'wb') as f:
-        f.write(key.encrypt(data))
-
-
-def gen_key() -> None:
-    key = Fernet.generate_key()
-    with open("secret.key", 'wb') as kf:
-        kf.write(key)
-
-
-def filter_cont(content: list, filt: list | tuple) -> list:
-    filt_list = []
-    for e in content:
-        filt_dict = {}
-        for key, value in e.items():
-            if key in filt:
-                filt_dict[key] = value
-        filt_list.append(filt_dict)
-    return filt_list
-
-
-def set_credentials() -> dict:
-    if "credentials.dat" in listdir():
-        tmp = decrypt("credentials.dat")
-        return {'username': tmp[0], 'password': tmp[1]}
-
-    else:
-        print("Insert Unina Mail: ", end="")
-        name = input()
-        passwd = getpass("Insert Password: (Password insertion hidden)")
-        dat = name + "\n" + passwd
-        encrypt("credentials.dat", dat.encode())
-        return {'username': name, 'password': passwd}
-
-
-def select_prof(name_list: list) -> tuple:
-    for i in range(len(name_list)):
-        t_n = name_list[i]["nome"]
-        t_c = name_list[i]["cognome"]
-        if "dipartimento" in name_list[i]:
-            t_d = name_list[i]["dipartimento"]
-        else:
-            t_d = "Don't belong to any department"
-        print("{}. {} {} - {}".format(i+1, t_n, t_c, t_d))
-    if len(name_list) == 0:
-        print("Empty search result.")
-        exit(404)
-    print("\nSelect ONE professor referring to the index: ", end="")
-    idx = int(input())-1
-    return (name_list[idx]["nome"], name_list[idx]["cognome"], name_list[idx]["id"])
 
 
 def explore_mat(s: Session, material: list, directory_tree: list, base_url: str) -> None:
@@ -138,13 +74,12 @@ def explore_mat(s: Session, material: list, directory_tree: list, base_url: str)
 
 
 def main():
-
     cookies = {}
     headers = {'Content-Type': 'application/json;charset=UTF-8',
                'Accept': 'application/json, text/plain, */*',
                'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.51 Safari/537.36',
                "Accept": "application/json, text/plain, */*", "Accept-Encoding": "gzip, deflate", "Content-Type": "application/json;charset=utf-8"}
-    cred = set_credentials()
+    cred = utils.setup()
     with session() as s:
         r = s.post(url=LOG_URL, json=cred, headers=headers,
                    cookies=cookies, verify=False)
@@ -155,11 +90,12 @@ def main():
         print("Insert Professor name and surname: ", end="")
         prof_name = quote(input())
         u_search = DOC_URL + f"docenti?nome={prof_name}&0&s=10"
-        name_list = filter_cont(loads(s.get(u_search).text)[
-                                "content"], PROF_FILT)
-        prof = select_prof(name_list)
+        name_list = utils.filter_cont(loads(s.get(u_search).text)[
+            "content"], PROF_FILT)
+        prof = utils.select_prof(name_list)
         id_prof = prof[2]
-        prof_dir = "Download/"+prof[0].capitalize() + "_" + prof[1].capitalize()
+        prof_dir = "Download/" + \
+            prof[0].capitalize() + "_" + prof[1].capitalize()
         makedirs(prof_dir, 0o755, True)
         chdir(prof_dir)
         material_url = DOC_URL + \
@@ -177,6 +113,4 @@ def main():
 if __name__ == '__main__':
     disable_warnings()
     chdir(dirname(realpath(__file__)))
-    if "secret.key" not in listdir():
-        gen_key()
     main()

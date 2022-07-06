@@ -21,5 +21,5 @@ Download all docent's documents in docenti.unina teaching material (using unina 
 - Terminal inline parsing
 ## Cryptography
 
-Using the <b><i>Fernet Cryptography Module</b></i>, the credentials file is encrypted/decrypted using the <i><b>secret.key</b></i>.\
+Using the <b><i>Fernet Cryptography Module</b></i>, the credentials file is encrypted/decrypted using the <i><b>secret.key</b></i> and the <i><b>crypt.py</b></i> module.\
 Upon generating a key it can be used to encrypt (encrypt function) and to decrypt (decrypt function)
