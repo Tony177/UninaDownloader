@@ -1,3 +1,7 @@
+# Custom ignore
+*.dat
+*.key
+Download/
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
