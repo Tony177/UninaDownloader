@@ -31,14 +31,12 @@ def setup() -> dict:
 
 
 def select_prof(name_list: list) -> tuple:
-    for i in range(len(name_list)):
-        t_n = name_list[i]["nome"]
-        t_c = name_list[i]["cognome"]
-        if "dipartimento" in name_list[i]:
-            t_d = name_list[i]["dipartimento"]
+    for i,e in enumerate(name_list):
+        if "dipartimento" in e:
+            t_d = e["dipartimento"]
         else:
             t_d = "Don't belong to any department"
-        print("{}. {} {} - {}".format(i+1, t_n, t_c, t_d))
+        print("{}. {} {} - {}".format(i+1, e["nome"], e["cognome"], t_d))
     if len(name_list) == 0:
         print("Empty search result.")
         exit(404)

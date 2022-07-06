@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 from urllib.parse import quote
 from urllib3 import disable_warnings
-from os import chdir, makedirs
+from os import chdir, makedirs,remove
 from os.path import dirname, realpath
 from requests import Session, session
 from json import loads
@@ -57,18 +57,18 @@ def explore_mat(s: Session, material: list, directory_tree: list, base_url: str)
             pth = e["percorso"] + "/"+e["nome"]
             pth = pth[1:]
         if e['tipo'] == 'D':
-            print("Access folder: {}".format(e["nome"]))
-
             makedirs(pth, 0o755, True)
             cont = loads(s.get(tmp_url).text)
             if "contenutoCartella" in cont:
                 explore_mat(s, cont["contenutoCartella"],
                             directory_tree, base_url)
         else:
-            print("Access file: {}".format(e["nome"]))
+            print("Downloading file: {}".format(e["nome"]))
             with s.get(FILE_URL+str(e["id"]), stream=True) as req:
                 with open(pth, 'wb') as f:
-                    for chunk in req.iter_content(chunk_size=1024):
+                    total_size = int(req.headers.get('Content-Length'))
+                    for i,chunk in enumerate(req.iter_content(chunk_size=1024)):
+                        print("Progress: {:3.2f}%".format(i*1024*100/total_size),end='\r')
                         if chunk:
                             f.write(chunk)
 
@@ -84,6 +84,7 @@ def main():
         r = s.post(url=LOG_URL, json=cred, headers=headers,
                    cookies=cookies, verify=False)
         if r.status_code != 200:
+            remove("credentials.dat")
             print("Wrong username/password or server error")
             exit(code=200)
 
