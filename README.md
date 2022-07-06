@@ -10,6 +10,12 @@ Download all docent's documents in docenti.unina teaching material (using unina 
 6. Insert professor surname or name in order to search among homonyms
 7. After all it will print a simple directory tree of all the downloaded file, while creating the same folders structure as the Unina site
 
+## Testing
+It's possible to test the program using ```pytest``` in the main directory.
+- Every passed test is represented as a dot <b>.</b>
+- Every failed test is represented as an <b>F</b>
+- Every test with exception error is represented as an <b>E</b>
+
 ## Future Implementation
 - Saving only some choosen files or directory instead of all files
 - Refractore code for readability and isolation
