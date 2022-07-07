@@ -1,3 +1,4 @@
+[![CodeQL](https://github.com/Tony177/UninaDownloader/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/Tony177/UninaDownloader/actions/workflows/codeql-analysis.yml) [![Pytest](https://github.com/Tony177/UninaDownloader/actions/workflows/pytest.yml/badge.svg)](https://github.com/Tony177/UninaDownloader/actions/workflows/pytest.yml)
 # UninaDownloader
 Download all docent's documents in docenti.unina teaching material (using unina credentials)
 
@@ -17,14 +18,15 @@ It's possible to test the program using ```pytest``` in the main directory.
 - Every test with exception error is represented as an <b>E</b>
 
 ## Future Implementation
-- Saving only some choosen files or directory instead of all files
-- Refractore code for readability and isolation
-- Better error and exception handling, such as:
-    - Remote access permission error
-    - Credentials error
-    - Local folder permission error
-- Auto restart code
-- Terminal inline parsing
+- Saving only some choosen files or directory instead of all files :o:
+- <s>Refractore code for readability and isolation </s> DONE! :heavy_check_mark: 
+- Better error and exception handling, such as: 
+    - Remote access permission error :o:
+    - <s>Credentials error </s> DONE! :heavy_check_mark:
+    - Local folder permission error :o:
+- Auto restart code :o:
+- Terminal inline parsing :o:
+- View not accessible folder (don't have enought permissions) :o:
 ## Cryptography
 
 Using the <b><i>Fernet Cryptography Module</b></i>, the credentials file is encrypted/decrypted using the <i><b>secret.key</b></i> and the <i><b>crypt.py</b></i> module.\
