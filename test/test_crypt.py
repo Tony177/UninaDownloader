@@ -10,6 +10,7 @@ def setup():
     crypt.gen_key()
     yield
     remove("secret.key")
+    remove("test.dat")
 
 
 @pytest.fixture
