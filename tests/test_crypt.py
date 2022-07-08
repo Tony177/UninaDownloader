@@ -21,6 +21,7 @@ def tmp_file_dec():
     yield file
     remove("test.txt")
 
+
 def test_gen(setup):
     assert "secret.key" in listdir()
 

@@ -1,4 +1,5 @@
-[![CodeQL](https://github.com/Tony177/UninaDownloader/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/Tony177/UninaDownloader/actions/workflows/codeql-analysis.yml) [![Pytest](https://github.com/Tony177/UninaDownloader/actions/workflows/pytest.yml/badge.svg)](https://github.com/Tony177/UninaDownloader/actions/workflows/pytest.yml)
+[![CodeQL](https://github.com/Tony177/UninaDownloader/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/Tony177/UninaDownloader/actions/workflows/codeql-analysis.yml)
+[![Python package](https://github.com/Tony177/UninaDownloader/actions/workflows/python-package.yml/badge.svg)](https://github.com/Tony177/UninaDownloader/actions/workflows/python-package.yml)
 # UninaDownloader
 Download all docent's documents in docenti.unina teaching material (using unina credentials)
 
@@ -13,6 +14,7 @@ Download all docent's documents in docenti.unina teaching material (using unina 
 
 ## Testing
 It's possible to test the program using ```pytest``` in the main directory.
+To do so you must install the pytest module with ```pip install pytest```
 - Every passed test is represented as a dot <b>.</b>
 - Every failed test is represented as an <b>F</b>
 - Every test with exception error is represented as an <b>E</b>

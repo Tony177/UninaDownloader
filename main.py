@@ -19,8 +19,10 @@ def main():
     cookies = {}
     headers = {'Content-Type': 'application/json;charset=UTF-8',
                'Accept': 'application/json, text/plain, */*',
-               'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.51 Safari/537.36',
-               "Accept": "application/json, text/plain, */*", "Accept-Encoding": "gzip, deflate", "Content-Type": "application/json;charset=utf-8"}
+               'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36\
+                (KHTML, like Gecko) Chrome/99.0.4844.51 Safari/537.36',
+               "Accept": "application/json, text/plain, */*", "Accept-Encoding": "gzip,\
+                deflate"}
     # Generate secret if not present and retrive from file or stdin credentials
     cred = utils.setup()
     with session() as s:

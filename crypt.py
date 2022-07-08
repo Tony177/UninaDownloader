@@ -10,7 +10,8 @@ def decrypt(filename: str) -> list[str]:
             filename (str): file's name to decode, including extension
 
         Returns:
-             dec_data (list): 2-value list credentials composed like [username,password]
+            dec_data (list): 2-value list credentials composed
+            like [username,password]
     """
     with open("secret.key", "rb") as k:
         key = Fernet(k.read())

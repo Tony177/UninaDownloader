@@ -3,16 +3,11 @@ from getpass import getpass
 from os import listdir, makedirs
 from requests import Session
 from json import loads
+from signal import signal, SIGINT
 from main import FILE_URL
 
 
 class Node():
-    def __init__(self) -> None:
-        self.path = "/"
-        self.name = ""
-        self.id = -1
-        self.type = "N"  # N none - F file - D directory
-
     def __init__(self, path: str, name: str, id_: int, type_: str, codins: str) -> None:
         self.path = path
         self.name = name
@@ -27,6 +22,13 @@ class Node():
         return "|"+"-"*4*c + " "+self.name
 
 
+def signal_handler(sign, frame):
+    answ = input("You entered CTRL+C, do you really wanna exit? y/n")
+    if answ in ('Y', 'y', 'yes'):
+        print("Goodbye!")
+        exit(0)
+
+
 def setup() -> dict[str]:
     """
     Generate secret key and if there isn't any saved credentials, ask them to the user.
@@ -37,14 +39,17 @@ def setup() -> dict[str]:
         Returns:
             cred (dict) : {username,password} formatted dictionary
     """
+    signal(SIGINT, signal_handler)
     crypt.gen_key()
     if "credentials.dat" in listdir():
         tmp = crypt.decrypt("credentials.dat")
         cred = {'username': tmp[0], 'password': tmp[1]}
 
     else:
-        print("Insert Unina Mail: ", end="")
+        print("Insert Unina Mail: (with or without @ postfix) ", end="")
         name = input()
+        if name.count("@") == 0:
+            name += "@studenti.unina.it"
         passwd = getpass("Insert Password (Password insertion hidden):")
         dat = name + "\n" + passwd
         crypt.encrypt("credentials.dat", dat.encode())
@@ -62,7 +67,7 @@ def select_prof(name_list: list[dict]) -> tuple[str]:
         Returns:
             choosen (tuple): 3-value tuple professor composed like (name,surname,index)
     """
-    l = len(name_list)
+    list_lenght = len(name_list)
     for i, e in enumerate(name_list):
         if "dipartimento" in e:
             t_d = e["dipartimento"]
@@ -70,14 +75,14 @@ def select_prof(name_list: list[dict]) -> tuple[str]:
             t_d = "Don't belong to any department"
         print("{}. {} {} - {}".format(i+1,
               e["nome"].capitalize(), e["cognome"].capitalize(), t_d))
-    if l == 0:
+    if list_lenght == 0:
         print("Empty search result.")
         exit(404)
     idx = -1
-    while idx > l-1 or idx < 0:
+    while idx > list_lenght-1 or idx < 0:
         print("\nSelect ONE professor referring to the index: ", end="")
         idx = int(input())-1
-        if idx > l-1 or idx < 0:
+        if idx > list_lenght-1 or idx < 0:
             print("Please insert a valid index!")
     return (name_list[idx]["nome"], name_list[idx]["cognome"], name_list[idx]["id"])
 
