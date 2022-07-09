@@ -1,22 +1,22 @@
 # This workflow will install Python dependencies, run tests and lint with a variety of Python versions
 # For more information see: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
 
-name: Pyinstaller
+name: Pyinstaller publish
 
 on:
   push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+    tags:
+      - '*'
 
 jobs:
-  build:
+    build:
 
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.10"]
+        python-version: ["3.9","3.10"]
+        os: [ubuntu-latest, macos-latest, windows-latest]
 
     steps:
     - uses: actions/checkout@v3
@@ -34,3 +34,11 @@ jobs:
     - name: Pyinstaller run
       run: |
         pyinstaller -n UninaDownloader main.py
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: UninaDownloader-${{ matrix.os}}-${{ matrix.python-version }}
+        path: dist/UninaDownloader/
+        if-no-files-found: error
+        retention-days: 30
+
