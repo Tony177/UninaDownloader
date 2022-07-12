@@ -3,7 +3,7 @@ from urllib.parse import quote
 from urllib3 import disable_warnings
 from os import chdir, makedirs, remove
 from os.path import dirname, realpath
-from requests import session
+from requests import session, RequestException
 from json import loads
 import utils
 
@@ -25,35 +25,46 @@ def main():
                 deflate"}
     # Generate secret if not present and retrive from file or stdin credentials
     cred = utils.setup()
-    with session() as s:
-        # Login and get token cookie
-        r = s.post(url=LOG_URL, json=cred, headers=headers,
-                   cookies=cookies, verify=False)
-        if r.status_code != 200:
-            remove("credentials.dat")
-            print("Wrong username/password or server error")
-            exit(code=200)
+    try:
+        with session() as s:
+            # Login and get token cookie
+            r = s.post(url=LOG_URL, json=cred, headers=headers,
+                       cookies=cookies, verify=False)
+            if r.status_code != 200:
+                remove("credentials.dat")
+                print("Wrong username/password or server error")
+                exit(code=200)
+            while True:
+                print("Insert Professor name and surname: (0 to exit)", end="")
 
-        print("Insert Professor name and surname: ", end="")
-        prof_name = quote(input())
-        u_search = DOC_URL + f"docenti?nome={prof_name}&0&s=10"
-        name_list = loads(s.get(u_search).text)["content"]
-        prof = utils.select_prof(name_list)
-        id_prof = prof[2]
-        prof_dir = DOWNLOAD_PATH + \
-            prof[0].capitalize() + " " + prof[1].capitalize()
-        makedirs(prof_dir, 0o755, True)
-        chdir(prof_dir)
-        explore_url = DOC_URL + \
-            f"docenti/{id_prof}/materiale-didattico/areapubb/"
-        material_url = explore_url + "?codIns="
+                prof_name = quote(input())
+                if prof_name == '0':
+                    print("Goodbye!")
+                    exit(0)
+                u_search = DOC_URL + f"docenti?nome={prof_name}&0&s=10"
+                name_list = loads(s.get(u_search).text)["content"]
+                prof = utils.select_prof(name_list)
+                id_prof = prof[2]
+                prof_dir = DOWNLOAD_PATH + \
+                    prof[0].capitalize() + " " + prof[1].capitalize()
+                makedirs(prof_dir, 0o755, True)
+                chdir(prof_dir)
+                explore_url = DOC_URL + \
+                    f"docenti/{id_prof}/materiale-didattico/areapubb/"
+                material_url = explore_url + "?codIns="
 
-        material = loads(s.get(material_url).text)
-        dic_tree = []
-        utils.explore_mat(s, material, dic_tree, explore_url)
-        print("\n\t--- Folder Tree ---\n")
-        for d in dic_tree:
-            print(d)
+                material = loads(s.get(material_url).text)
+                dic_tree = []
+                utils.selection(s, dic_tree, explore_url)
+                # utils.explore_mat(s, material, dic_tree, explore_url)
+                print("\n\t--- Folder Tree ---\n")
+                for d in dic_tree:
+                    print(d)
+    except RequestException as e:
+        print("Connection error, check your internet.")
+        with open("error.txt", 'w') as f:
+            f.write(str(e))
+        exit(-1)
 
 
 if __name__ == '__main__':

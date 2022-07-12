@@ -1,10 +1,13 @@
 import crypt
 from getpass import getpass
 from os import listdir, makedirs
+from ordered_set import T
 from requests import Session
 from json import loads
 from signal import signal, SIGINT
 from main import FILE_URL
+
+CHUNK_SIZE = 2048
 
 
 class Node():
@@ -20,6 +23,15 @@ class Node():
         if self.path == "/":
             c -= 1
         return "|"+"-"*4*c + " "+self.name
+
+    def get_id(self) -> str:
+        return self.id
+
+    def get_name(self) -> str:
+        return self.name
+
+    def get_cod(self):
+        return self.codins
 
 
 def signal_handler(sign, frame):
@@ -87,13 +99,50 @@ def select_prof(name_list: list[dict]) -> tuple[str]:
     return (name_list[idx]["nome"], name_list[idx]["cognome"], name_list[idx]["id"])
 
 
+def parse_selection(material: list, idxs_list: str) -> list:
+    sub_material = []
+    mat_len = len(material)
+    idxs = [int(x) for x in idxs_list.rstrip().split("-")]
+    for idx in idxs:
+        if idx < 1 or idx > mat_len:
+            print("Out of bound selection")
+            exit(404)
+        sub_material.append(material[idx-1])
+    return sub_material
+
+
+def selection(session: Session, dict_tree: list, base_url: str) -> None:
+    """
+    Let choose some initial folder or all folder to download, then start calling explore_mat(...)
+
+        Parameters:
+            session (Requests.Session): Requests previous authenticated session (with auth cookies)
+            base_url (str): standard prefix of the url alredy formatted with the professor id    
+
+        Returns:
+            None 
+    """
+    cont = loads(session.get(base_url).text)  # get the folder content
+
+    for i, e in enumerate(cont):
+        print(f'{i+1}. {e["nome"]}')
+    print("\nChoose folders inserting index number:")
+    choose = input(
+        "Multiple with - between, or 'all' to download all: (Ex: 1 / 3-4-5 / all): ")
+    if choose in ("All", "ALL", "all"):
+        explore_mat(session, cont, dict_tree, base_url)
+    else:
+        sub_material = parse_selection(cont, choose)
+        explore_mat(session, sub_material, dict_tree, base_url)
+
+
 def explore_mat(session: Session, material: list, directory_tree: list, base_url: str) -> None:
     """
     Recursively explore remote directory tree, get and download every folder and save its structure in list of nodes
 
         Parameters:
             session (Requests.Session): Requests previous authenticated session (with auth cookies)
-            material (list): list of actual explorable directories/files
+            material (list): list of actual explorable directories/files (text from session's get serialized with json.loads)
             directory_tree (list): IN/OUT list of nodes (to view folders structure)
             base_url (str): standard prefix of the url alredy formatted with the professor id
 
@@ -102,8 +151,8 @@ def explore_mat(session: Session, material: list, directory_tree: list, base_url
 
     """
     for e in material:
-        if "codIns" in e:  # Handle case without codIns
-            codIns = e["codIns"]
+        if "codInse" in e:  # Handle case without codIns
+            codIns = e["codInse"]
         else:
             codIns = ""
         tmp_url = base_url + \
@@ -132,9 +181,10 @@ def explore_mat(session: Session, material: list, directory_tree: list, base_url
             with session.get(FILE_URL+str(e["id"]), stream=True) as req:
                 with open(pth, 'wb') as f:
                     total_size = int(req.headers.get('Content-Length'))
-                    for i, chunk in enumerate(req.iter_content(chunk_size=1024)):
+
+                    for i, chunk in enumerate(req.iter_content(chunk_size=CHUNK_SIZE)):
                         # progress in % with carriage char to clean previous printed %
                         print("Progress: {:3.2f}%".format(
-                            i*1024*100/total_size), end='\r')
+                            i*CHUNK_SIZE*100/total_size), end='\r')
                         if chunk:
                             f.write(chunk)
