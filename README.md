@@ -32,10 +32,19 @@ To do so you must install the pytest module with `pip install pytest`
 - Better error and exception handling, such as:
   - <s>Remote access permission error </s> DONE! :heavy_check_mark:
   - <s>Credentials error </s> DONE! :heavy_check_mark:
-  - Local folder permission error :o:
+  - <s>Local folder permission error </s> Calling function alredy check if file exists :heavy_check_mark:
 - <s>Auto restart code </s> DONE! :heavy_check_mark:
 - Terminal inline parsing :o:
 - View not accessible folder (don't have enought permissions) :o:
+- Automate pyinstaller procedure and publishing precompiled executables :o:
+
+## Creating executable with PyInstaller
+
+It's possible to create a one-file or a one-dir executable, which include compiled and linked library all togheter (Python and PiP still required)
+
+- First of all install PyInstaller module using `pip install pyinstaller`
+- Go into project root directory and run `pyinstaller -n EXE_NAME -FLAG main.py` where <i>EXE_NAME</i> is final executable name and <i>FLAG</i> is either D or F based on one-dir or one-file choice
+  Any other flag is documentated in help section of pyinstaller, which can be found online or with `pyinstaller -h` command.
 
 ## Cryptography
 

@@ -68,6 +68,6 @@ def main():
 
 
 if __name__ == '__main__':
-    disable_warnings()
-    chdir(dirname(realpath(__file__)))
+    disable_warnings()  # Disable SSL certificate warning
+    chdir(dirname(realpath(__file__))) # Set project root folder as working directory
     main()

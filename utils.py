@@ -1,7 +1,6 @@
 import crypt
 from getpass import getpass
 from os import listdir, makedirs
-from ordered_set import T
 from requests import Session
 from json import loads
 from signal import signal, SIGINT
@@ -105,8 +104,7 @@ def parse_selection(material: list, idxs_list: str) -> list:
     idxs = [int(x) for x in idxs_list.rstrip().split("-")]
     for idx in idxs:
         if idx < 1 or idx > mat_len:
-            print("Out of bound selection")
-            exit(404)
+            raise(IndexError)
         sub_material.append(material[idx-1])
     return sub_material
 
@@ -132,7 +130,11 @@ def selection(session: Session, dict_tree: list, base_url: str) -> None:
     if choose in ("All", "ALL", "all"):
         explore_mat(session, cont, dict_tree, base_url)
     else:
-        sub_material = parse_selection(cont, choose)
+        try:
+            sub_material = parse_selection(cont, choose)
+        except IndexError:
+            print("Out of bound selection")
+            exit(404)
         explore_mat(session, sub_material, dict_tree, base_url)
 
 
