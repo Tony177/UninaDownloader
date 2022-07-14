@@ -33,6 +33,5 @@ def test_parse(setup_parse,monkeypatch):
     mat,idx_true,idx_false,idx_single = setup_parse
     assert utils.parse_selection(mat,idx_true) == ["second","fourth","sixth"]
     assert utils.parse_selection(mat,idx_single) == ["fifth"]
-    with pytest.raises(IndexError):
-        utils.parse_selection(mat,idx_false)
+    assert utils.parse_selection(mat,idx_false) == [-1]
 

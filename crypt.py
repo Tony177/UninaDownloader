@@ -2,7 +2,7 @@ from cryptography.fernet import Fernet
 from os import listdir
 
 
-def decrypt(filename: str) -> list[str]:
+def decrypt(filename: str) -> list:
     """
     Decrypt a file with the secret file key
 
@@ -45,3 +45,7 @@ def gen_key() -> None:
         key = Fernet.generate_key()
         with open("secret.key", 'wb') as kf:
             kf.write(key)
+
+
+if __name__ == '__main__':
+    pass

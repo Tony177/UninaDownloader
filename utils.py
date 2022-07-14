@@ -34,13 +34,12 @@ class Node():
 
 
 def signal_handler(sign, frame):
-    answ = input("You entered CTRL+C, do you really wanna exit? y/n")
-    if answ in ('Y', 'y', 'yes'):
-        print("Goodbye!")
-        exit(0)
+    print("You entered CTRL+C, exiting now...")
+    print("Goodbye!")
+    exit(0)
 
 
-def setup() -> dict[str]:
+def setup() -> dict:
     """
     Generate secret key and if there isn't any saved credentials, ask them to the user.
 
@@ -68,7 +67,7 @@ def setup() -> dict[str]:
     return cred
 
 
-def select_prof(name_list: list[dict]) -> tuple[str]:
+def select_prof(name_list: list) -> tuple:
     """
     Format and print the prof search result and return the choosen one's info
 
@@ -83,7 +82,7 @@ def select_prof(name_list: list[dict]) -> tuple[str]:
         if "dipartimento" in e:
             t_d = e["dipartimento"]
         else:
-            t_d = "Don't belong to any department"
+            t_d = "No valid info on department"
         print("{}. {} {} - {}".format(i+1,
               e["nome"].capitalize(), e["cognome"].capitalize(), t_d))
     if list_lenght == 0:
@@ -104,7 +103,7 @@ def parse_selection(material: list, idxs_list: str) -> list:
     idxs = [int(x) for x in idxs_list.rstrip().split("-")]
     for idx in idxs:
         if idx < 1 or idx > mat_len:
-            raise(IndexError)
+            return [-1]
         sub_material.append(material[idx-1])
     return sub_material
 
@@ -115,27 +114,28 @@ def selection(session: Session, dict_tree: list, base_url: str) -> None:
 
         Parameters:
             session (Requests.Session): Requests previous authenticated session (with auth cookies)
-            base_url (str): standard prefix of the url alredy formatted with the professor id    
+            base_url (str): standard prefix of the url alredy formatted with the professor id
 
         Returns:
-            None 
+            None
     """
+    sub_material = []
     cont = loads(session.get(base_url).text)  # get the folder content
 
     for i, e in enumerate(cont):
         print(f'{i+1}. {e["nome"]}')
-    print("\nChoose folders inserting index number:")
-    choose = input(
-        "Multiple with - between, or 'all' to download all: (Ex: 1 / 3-4-5 / all): ")
-    if choose in ("All", "ALL", "all"):
-        explore_mat(session, cont, dict_tree, base_url)
-    else:
-        try:
+    print("\nChoose folders inserting index number")
+    print("Multiple with - between, or 'all' to download all (Ex: 1 / 3-4-5 / all):")
+    while sub_material == []:
+        choose = input()
+        if choose in ("All", "ALL", "all"):
+            explore_mat(session, cont, dict_tree, base_url)
+            break
+        else:
             sub_material = parse_selection(cont, choose)
-        except IndexError:
-            print("Out of bound selection")
-            exit(404)
-        explore_mat(session, sub_material, dict_tree, base_url)
+            explore_mat(session, sub_material, dict_tree, base_url)
+            if sub_material == []:
+                print("Insert a valid index")
 
 
 def explore_mat(session: Session, material: list, directory_tree: list, base_url: str) -> None:
@@ -179,14 +179,22 @@ def explore_mat(session: Session, material: list, directory_tree: list, base_url
                             directory_tree, base_url)
         else:  # else if it's a file
             print("Downloading file: {}".format(e["nome"]))
-            # stream true don't overstress RAM
-            with session.get(FILE_URL+str(e["id"]), stream=True) as req:
-                with open(pth, 'wb') as f:
-                    total_size = int(req.headers.get('Content-Length'))
+            download_file(session, pth, str(e["id"]))
 
-                    for i, chunk in enumerate(req.iter_content(chunk_size=CHUNK_SIZE)):
-                        # progress in % with carriage char to clean previous printed %
-                        print("Progress: {:3.2f}%".format(
-                            i*CHUNK_SIZE*100/total_size), end='\r')
-                        if chunk:
-                            f.write(chunk)
+
+def download_file(session: Session, file_path: str, url_path: str) -> None:
+    # stream true don't overstress RAM
+    with session.get((FILE_URL+url_path), stream = True) as req:
+        with open(file_path, 'wb') as f:
+            total_size=int(req.headers.get('Content-Length'))
+
+            for i, chunk in enumerate(req.iter_content(chunk_size=CHUNK_SIZE)):
+                # progress in % with carriage char to clean previous printed %
+                perc=i*CHUNK_SIZE*100/total_size
+                print("Progress: {:3.2f}%\t".format(), end = '\r')
+                if chunk:
+                    f.write(chunk)
+
+
+if __name__ == '__main__':
+    pass

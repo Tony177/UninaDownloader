@@ -35,7 +35,8 @@ def main():
                 print("Wrong username/password or server error")
                 exit(code=200)
             while True:
-                print("Insert Professor name and surname: (0 to exit)", end="")
+                print(
+                    "Insert Professor name and surname(preferably only surname): (0 to exit)", end="")
 
                 prof_name = quote(input())
                 if prof_name == '0':
@@ -51,12 +52,8 @@ def main():
                 chdir(prof_dir)
                 explore_url = DOC_URL + \
                     f"docenti/{id_prof}/materiale-didattico/areapubb/"
-                material_url = explore_url + "?codIns="
-
-                material = loads(s.get(material_url).text)
                 dic_tree = []
                 utils.selection(s, dic_tree, explore_url)
-                # utils.explore_mat(s, material, dic_tree, explore_url)
                 print("\n\t--- Folder Tree ---\n")
                 for d in dic_tree:
                     print(d)
@@ -69,5 +66,6 @@ def main():
 
 if __name__ == '__main__':
     disable_warnings()  # Disable SSL certificate warning
-    chdir(dirname(realpath(__file__))) # Set project root folder as working directory
+    # Set project root folder as working directory
+    chdir(dirname(realpath(__file__)))
     main()
