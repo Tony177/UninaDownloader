@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 from urllib.parse import quote
-from urllib3 import disable_warnings
 from os import chdir, makedirs, remove
 from os.path import dirname, realpath
 from requests import session, RequestException
@@ -29,14 +28,14 @@ def main():
         with session() as s:
             # Login and get token cookie
             r = s.post(url=LOG_URL, json=cred, headers=headers,
-                       cookies=cookies, verify=False)
+                       cookies=cookies, verify="cert.pem")
             if r.status_code != 200:
                 remove("credentials.dat")
                 print("Wrong username/password or server error")
                 exit(code=200)
             while True:
                 print(
-                    "Insert Professor name and surname(preferably only surname): (0 to exit)", end="")
+                    "Insert Professor surname and/or name (0 to exit): ", end="")
 
                 prof_name = quote(input())
                 if prof_name == '0':
@@ -65,7 +64,6 @@ def main():
 
 
 if __name__ == '__main__':
-    disable_warnings()  # Disable SSL certificate warning
     # Set project root folder as working directory
     chdir(dirname(realpath(__file__)))
     main()

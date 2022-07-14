@@ -100,10 +100,14 @@ def select_prof(name_list: list) -> tuple:
 def parse_selection(material: list, idxs_list: str) -> list:
     sub_material = []
     mat_len = len(material)
-    idxs = [int(x) for x in idxs_list.rstrip().split("-")]
+    try:
+        idxs = [int(x) for x in idxs_list.rstrip().split("-")]
+    except ValueError:
+        print("Index typed wrong. Exit...")
+        exit(-1)
     for idx in idxs:
         if idx < 1 or idx > mat_len:
-            return [-1]
+            return []
         sub_material.append(material[idx-1])
     return sub_material
 
@@ -125,17 +129,18 @@ def selection(session: Session, dict_tree: list, base_url: str) -> None:
     for i, e in enumerate(cont):
         print(f'{i+1}. {e["nome"]}')
     print("\nChoose folders inserting index number")
-    print("Multiple with - between, or 'all' to download all (Ex: 1 / 3-4-5 / all):")
+    print("Multiple with - between, or 'all' to download all (Ex: 1 / 3-4-5 / all): ", end="")
     while sub_material == []:
         choose = input()
-        if choose in ("All", "ALL", "all"):
+        if choose.lower() == "all":
             explore_mat(session, cont, dict_tree, base_url)
             break
         else:
             sub_material = parse_selection(cont, choose)
-            explore_mat(session, sub_material, dict_tree, base_url)
             if sub_material == []:
                 print("Insert a valid index")
+            else:
+                explore_mat(session, sub_material, dict_tree, base_url)
 
 
 def explore_mat(session: Session, material: list, directory_tree: list, base_url: str) -> None:
@@ -184,14 +189,14 @@ def explore_mat(session: Session, material: list, directory_tree: list, base_url
 
 def download_file(session: Session, file_path: str, url_path: str) -> None:
     # stream true don't overstress RAM
-    with session.get((FILE_URL+url_path), stream = True) as req:
+    with session.get((FILE_URL+url_path), stream=True) as req:
         with open(file_path, 'wb') as f:
-            total_size=int(req.headers.get('Content-Length'))
+            total_size = int(req.headers.get('Content-Length'))
 
             for i, chunk in enumerate(req.iter_content(chunk_size=CHUNK_SIZE)):
                 # progress in % with carriage char to clean previous printed %
-                perc=i*CHUNK_SIZE*100/total_size
-                print("Progress: {:3.2f}%\t".format(), end = '\r')
+                perc = i*CHUNK_SIZE*100/total_size
+                print("Progress: {:3.2f}%".format(perc), end='\r')
                 if chunk:
                     f.write(chunk)
 
