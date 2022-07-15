@@ -38,4 +38,4 @@ def test_parse(setup_parse, monkeypatch):
     assert utils.parse_selection(mat, idx_true) == [
         "second", "fourth", "sixth"]
     assert utils.parse_selection(mat, idx_single) == ["fifth"]
-    assert utils.parse_selection(mat, idx_false) == [-1]
+    assert utils.parse_selection(mat, idx_false) == []
