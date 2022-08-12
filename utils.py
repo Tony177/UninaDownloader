@@ -1,10 +1,10 @@
 import crypt
 from getpass import getpass
-from os import listdir, makedirs
+from os import listdir, makedirs, remove,chdir
 from requests import Session
 from json import loads
 from signal import signal, SIGINT
-from main import FILE_URL
+from main import FILE_URL,LOG_URL
 
 CHUNK_SIZE = 2048
 
@@ -56,7 +56,7 @@ def setup() -> dict:
         cred = {'username': tmp[0], 'password': tmp[1]}
 
     else:
-        print("Insert Unina Mail: (with or without @ postfix) ", end="")
+        print("Insert Unina Mail (even without @studenti.unina.it): ", end="")
         name = input()
         if name.count("@") == 0:
             name += "@studenti.unina.it"
@@ -180,8 +180,8 @@ def explore_mat(session: Session, material: list, directory_tree: list, base_url
             makedirs(pth, 0o755, True)  # make the folders
             cont = loads(session.get(tmp_url).text)  # get the folder content
             if "contenutoCartella" in cont:  # don't explore if empty or it's an error
-                explore_mat(session, cont["contenutoCartella"],
-                            directory_tree, base_url)
+                explore_mat(
+                    session, cont["contenutoCartella"], directory_tree, base_url)
         else:  # else if it's a file
             print("Downloading file: {}".format(e["nome"]))
             download_file(session, pth, str(e["id"]))
@@ -189,7 +189,7 @@ def explore_mat(session: Session, material: list, directory_tree: list, base_url
 
 def download_file(session: Session, file_path: str, url_path: str) -> None:
     # stream true don't overstress RAM
-    with session.get((FILE_URL+url_path), stream=True) as req:
+    with session.get((FILE_URL+url_path), stream=True, allow_redirects=False) as req:
         with open(file_path, 'wb') as f:
             total_size = int(req.headers.get('Content-Length'))
 
@@ -199,6 +199,34 @@ def download_file(session: Session, file_path: str, url_path: str) -> None:
                 print("Progress: {:3.2f}%".format(perc), end='\r')
                 if chunk:
                     f.write(chunk)
+
+
+def print_menu(elements: list) -> int:
+    for idx, e in enumerate(elements):
+        print(f"{idx}. {e}")
+    answer = -1
+    while answer < 1 or answer > len(elements):
+        print("Select action: ")
+        input(answer)
+    return answer-1
+
+
+def login(s: Session) -> None:
+    # Login and get token cookie
+    cookies = {}
+    headers = {'Content-Type': 'application/json;charset=UTF-8',
+               'Accept': 'application/json, text/plain, */*',
+               'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36\
+                (KHTML, like Gecko) Chrome/99.0.4844.51 Safari/537.36',
+               "Accept": "application/json, text/plain, */*", "Accept-Encoding": "gzip,\
+                deflate"}
+    cred = setup()
+    r = s.post(url=LOG_URL, json=cred, headers=headers,
+               cookies=cookies, verify="cert.pem")
+    if r.status_code != 200:
+        remove("credentials.dat")
+        print("Wrong username/password or server error")
+        exit(code=200)
 
 
 if __name__ == '__main__':

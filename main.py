@@ -15,24 +15,18 @@ DOWNLOAD_PATH = "download/"
 
 
 def main():
-    cookies = {}
-    headers = {'Content-Type': 'application/json;charset=UTF-8',
-               'Accept': 'application/json, text/plain, */*',
-               'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36\
-                (KHTML, like Gecko) Chrome/99.0.4844.51 Safari/537.36',
-               "Accept": "application/json, text/plain, */*", "Accept-Encoding": "gzip,\
-                deflate"}
     # Generate secret if not present and retrive from file or stdin credentials
-    cred = utils.setup()
+    #cred = utils.setup()
     try:
         with session() as s:
             # Login and get token cookie
-            r = s.post(url=LOG_URL, json=cred, headers=headers,
-                       cookies=cookies, verify="cert.pem")
-            if r.status_code != 200:
-                remove("credentials.dat")
-                print("Wrong username/password or server error")
-                exit(code=200)
+            # r = s.post(url=LOG_URL, json=cred, headers=headers,
+            #            cookies=cookies, verify="cert.pem")
+            # if r.status_code != 200:
+            #     remove("credentials.dat")
+            #     print("Wrong username/password or server error")
+            #     exit(code=200)
+            utils.login(s)
             while True:
                 print(
                     "Insert Professor surname and/or name (0 to exit): ", end="")
